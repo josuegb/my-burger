@@ -21,17 +21,20 @@ const INGREDIENT_PRICES = {
 class BurgerBuilder extends Component {
 
   state = {
-    ingredients: {
-      salad: 0,
-      bacon: 0,
-      cheese: 0,
-      meat: 0
-    },
-
+    ingredients: null,
     totalPrice: 4,
     purchasable: false,
     purchasing: false,
     loading: false,
+    error: false
+  }
+
+  componentDidMount() {
+    axios.get('/ingredients.json')
+      .then(response => {
+        this.setState({ ingredients: response.data });
+      })
+      .catch( error => { this.setState({ error: true }) } );
   }
 
   updatePurchaseState(ingredients) {
@@ -116,13 +119,28 @@ class BurgerBuilder extends Component {
       disabledInfo[key] = disabledInfo[key] <= 0;
     }
 
-    const orderSummary = (this.state.loading && <Spinner />) || (
+    const orderSummary = (!this.state.ingredients || this.state.loading) ? <Spinner /> : (
       <OrderSummary
         ingredients={this.state.ingredients}
         purchaseContinue={this.purchaseContinueHandler}
         purchaseCancel={this.purchaseCancelHandler}
         price={this.state.totalPrice} />
     );
+
+    let burger = !this.state.ingredients ? < Spinner /> : (
+      <Aux>
+        <Burger ingredients={this.state.ingredients} />
+        <BurgerControls
+          addIngredient={this.addIngredientHandler}
+          removeIngredient={this.removeIngredientHandler}
+          disabled={disabledInfo}
+          price={this.state.totalPrice}
+          purchasable={this.state.purchasable}
+          order={this.purchaseHandler} />
+      </Aux>
+    );
+
+    if (this.state.error) burger = <p style={{ textAlign: 'center' }}> Ingredients can't be loaded! </p>;
 
     return (
       <Aux>
@@ -131,14 +149,7 @@ class BurgerBuilder extends Component {
           closeModal={this.purchaseCancelHandler}>
           { orderSummary }
         </Modal>
-        <Burger ingredients={this.state.ingredients}/>
-        <BurgerControls
-          addIngredient={this.addIngredientHandler}
-          removeIngredient={this.removeIngredientHandler}
-          disabled={disabledInfo}
-          price={this.state.totalPrice}
-          purchasable={this.state.purchasable}
-          order={this.purchaseHandler} />
+        { burger }
       </Aux>
     );
   }
