@@ -5,6 +5,7 @@ import axios from '../../axios-orders';
 import Aux from '../../hoc/Aux/Aux';
 import Modal from '../../components/UI/Modal/Modal';
 import Spinner from '../../components/UI/Spinner/Spinner'
+import withErrorHandler from '../../hoc/withErrorHandler/withErrorHandler'
 
 import Burger from '../../components/Burger/Burger';
 import BurgerControls from '../../components/Burger/BuildControls/BuildControls';
@@ -115,11 +116,13 @@ class BurgerBuilder extends Component {
       disabledInfo[key] = disabledInfo[key] <= 0;
     }
 
-    const orderSummary = (this.state.loading && <Spinner />) || (<OrderSummary
+    const orderSummary = (this.state.loading && <Spinner />) || (
+      <OrderSummary
         ingredients={this.state.ingredients}
         purchaseContinue={this.purchaseContinueHandler}
         purchaseCancel={this.purchaseCancelHandler}
-        price={this.state.totalPrice} />);
+        price={this.state.totalPrice} />
+    );
 
     return (
       <Aux>
@@ -141,4 +144,4 @@ class BurgerBuilder extends Component {
   }
 }
 
-export default BurgerBuilder;
+export default withErrorHandler(BurgerBuilder, axios);
